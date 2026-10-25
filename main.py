@@ -29,6 +29,18 @@ agent_brain()
 
 
 
+# Student details
+name = "Muskan"
+age = 20
+cgpa = 7.80
+is_student = True
+
+# Display details
+print("Name:", name)
+print("Age:", age)
+print("CGPA:", cgpa)
+print("Is Student:", is_student)
+
 
 
 
