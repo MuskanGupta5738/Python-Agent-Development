@@ -1,4 +1,5 @@
 
+import html
 import streamlit as st
 import pandas as pd
 
@@ -11,207 +12,188 @@ from api_client import (
 )
 
 st.set_page_config(
-    page_title="KnowledgeIQ | Knowledge Assistant",
+    page_title="KnowledgeIQ | Knowledge Workspace",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ---------------- CUSTOM UI ----------------
+# ==================== DESIGN & CSS ====================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
-
 :root {
-    --purple: #7964dc;
-    --deep: #33275e;
-    --ink: #29234a;
-    --muted: #77738f;
-    --border: #e8e3f4;
+    color-scheme: light;
 }
 
-.stApp {
-    background: #f8f7fc;
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
+.stApp,
+[data-testid="stAppViewContainer"] {
+    background: #f8f7fc !important;
+    color: #302750 !important;
+}
+
+[data-testid="stHeader"] {
+    background: #f8f7fc !important;
+    color: #302750 !important;
+}
+
+[data-testid="stToolbar"] {
+    background: transparent !important;
 }
 
 .block-container {
-    max-width: 1450px;
-    padding: 2rem 2.5rem 3rem 2.5rem;
+    max-width: 1350px;
+    padding-top: 2.5rem;
+    padding-bottom: 2rem;
 }
 
+h1, h2, h3, h4,
+.stApp p,
+.stApp label,
+.stApp [data-testid="stMarkdownContainer"] {
+    color: #302750;
+}
+
+/* SIDEBAR */
 [data-testid="stSidebar"] {
-    background: #efebfb !important;
-    border-right: 1px solid #e2dcf5;
+    background: #eeeafb !important;
+    border-right: 1px solid #ded7f3;
 }
 
 [data-testid="stSidebar"] > div {
-    background: transparent;
+    background: #eeeafb !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] span {
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h4,
+[data-testid="stSidebar"] [data-testid="stRadio"] label,
+[data-testid="stSidebar"] [data-testid="stRadio"] label p,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
     color: #382c65 !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: #382c65 !important;
-    font-weight: 600;
 }
 
 .brand {
-    color: #35275f;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 27px;
+    font-size: 29px;
     font-weight: 800;
     letter-spacing: -1px;
-    margin-bottom: 3px;
+    color: #33275e !important;
+    padding-top: 12px;
 }
 
 .brand span {
-    color: #8069e5 !important;
+    color: #7964dc !important;
 }
 
-.brand-caption {
-    color: #71658f !important;
+.brand-sub {
+    color: #695b91 !important;
     font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 20px;
+    margin-bottom: 26px;
 }
 
+.side-heading {
+    color: #514080 !important;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    margin: 20px 0 10px;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    padding: 7px 8px;
+    border-radius: 9px;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+    background: #e1dafa;
+}
+
+/* HERO */
 .eyebrow {
-    color: #7964dc;
-    font-size: 11px;
+    color: #6952cc !important;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 2px;
-    margin-bottom: 10px;
+    margin: 4px 0 12px;
 }
 
 .hero {
-    background: linear-gradient(115deg, #33275e, #57449a 60%, #8875e8);
-    color: white;
-    border-radius: 22px;
-    padding: 35px;
-    margin: 12px 0 27px 0;
-    box-shadow: 0 12px 30px rgba(62, 45, 117, 0.15);
+    background: linear-gradient(115deg, #33275e, #5c49a3 65%, #8976e8);
+    border-radius: 24px;
+    padding: 42px 45px;
+    margin: 12px 0 32px;
+    box-shadow: 0 12px 30px rgba(51, 39, 94, 0.12);
+}
+
+.hero h1 {
+    color: #ffffff !important;
+    font-size: 40px;
+    line-height: 1.25;
+    margin: 18px 0;
+}
+
+.hero p {
+    color: #f3efff !important;
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 760px;
 }
 
 .hero-tag {
     display: inline-block;
-    padding: 7px 12px;
-    border: 1px solid rgba(255,255,255,.25);
-    background: rgba(255,255,255,.12);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 30px;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 17px;
-}
-
-.hero h1 {
-    color: white !important;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 35px;
-    line-height: 1.25;
-    margin: 0 0 12px 0;
-}
-
-.hero p {
-    color: #eee8ff !important;
-    font-size: 15px;
-    line-height: 1.8;
-    max-width: 760px;
-    margin-bottom: 0;
-}
-
-.section-title {
-    color: #302750;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 20px;
-    font-weight: 800;
-    margin: 24px 0 15px 0;
-}
-
-.metric-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 17px;
-    padding: 20px;
-    min-height: 140px;
-    box-shadow: 0 5px 18px rgba(44,32,90,.035);
-}
-
-.metric-icon {
-    font-size: 23px;
-    margin-bottom: 10px;
-}
-
-.metric-label {
-    color: var(--muted);
+    color: #ffffff !important;
+    padding: 8px 14px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-.metric-value {
-    color: #302750;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 25px;
-    font-weight: 800;
-    margin: 5px 0;
-}
-
-.feature-card {
-    background: white;
-    border: 1px solid var(--border);
+/* CARDS */
+.card {
+    background: #ffffff;
+    border: 1px solid #e7e1f4;
     border-radius: 17px;
-    padding: 23px;
-    min-height: 175px;
+    padding: 22px;
+    min-height: 140px;
+    margin-bottom: 15px;
+    box-shadow: 0 6px 18px rgba(51,39,94,0.04);
+}
+
+.card-icon {
+    font-size: 25px;
     margin-bottom: 12px;
 }
 
-.feature-icon {
-    background: #eeeaff;
-    border-radius: 12px;
-    width: 43px;
-    height: 43px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    margin-bottom: 15px;
-}
-
-.feature-title {
-    color: #302750;
-    font-size: 16px;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.feature-desc {
-    color: #77738f;
+.card-label {
     font-size: 13px;
-    line-height: 1.7;
+    color: #6e638c !important;
+    font-weight: 600;
 }
 
-.info-panel {
-    background: #f0edff;
-    border: 1px solid #e0d8ff;
-    border-radius: 15px;
-    padding: 19px 22px;
-    margin: 20px 0;
-    color: #49388b;
-    line-height: 1.8;
+.card-value {
+    font-size: 25px;
+    color: #33275e !important;
+    font-weight: 800;
+    margin: 6px 0;
 }
 
+.card-desc {
+    font-size: 13px;
+    color: #71658f !important;
+    line-height: 1.6;
+}
 
+.section-title {
+    font-size: 22px;
+    color: #302750 !important;
+    font-weight: 800;
+    margin: 22px 0 14px;
+}
 
-/* Buttons: visible text and premium purple styling */
+/* ALL BUTTONS */
 .stButton > button,
 .stFormSubmitButton > button,
 [data-testid="stFormSubmitButton"] button {
@@ -219,157 +201,44 @@ st.markdown("""
     color: #ffffff !important;
     border: 1px solid #7964dc !important;
     border-radius: 11px !important;
-    min-height: 46px;
-    padding: 0.65rem 1.25rem;
-    font-size: 15px !important;
     font-weight: 700 !important;
-    box-shadow: 0 4px 12px rgba(121, 100, 220, 0.16);
-    transition: all 0.2s ease;
+    min-height: 46px;
+    padding: 10px 18px;
 }
 
-.stButton > button p,
-.stFormSubmitButton > button p,
-[data-testid="stFormSubmitButton"] button p {
+.stButton > button *,
+.stFormSubmitButton > button *,
+[data-testid="stFormSubmitButton"] button * {
     color: #ffffff !important;
-    font-weight: 700 !important;
 }
 
 .stButton > button:hover,
-.stFormSubmitButton > button:hover,
-[data-testid="stFormSubmitButton"] button:hover {
-    background: #5f49bd !important;
-    color: #ffffff !important;
-    border-color: #5f49bd !important;
-    box-shadow: 0 6px 18px rgba(95, 73, 189, 0.24);
+.stFormSubmitButton > button:hover {
+    background: #6049c1 !important;
+    border-color: #6049c1 !important;
 }
 
-/* Top header */
-header[data-testid="stHeader"] {
-    background: #f8f7fc !important;
-}
-
-[data-testid="stToolbar"] {
-    background: transparent !important;
-}
-
-/* Input labels */
-.stTextInput label,
-.stTextInput label p {
-    color: #382c65 !important;
+/* INPUTS */
+[data-testid="stTextInput"] label,
+[data-testid="stTextInput"] label p {
+    color: #35275f !important;
     font-weight: 700 !important;
 }
 
-/* Input text and placeholder */
-.stTextInput input {
-    background: #ffffff !important;
-    color: #29234a !important;
-    border: 1px solid #dcd5ef !important;
-    border-radius: 11px !important;
-    min-height: 46px;
-}
-
-.stTextInput input::placeholder {
-    color: #9189a8 !important;
-    opacity: 1;
-}
-
-.stTextInput input:focus {
-    border-color: #7964dc !important;
-    box-shadow: 0 0 0 2px rgba(121, 100, 220, 0.13) !important;
-}
-
-
-
-
-
-
-
-
-.stButton > button:hover {
-    background: #6550c4;
-    border-color: #6550c4;
-}
-
-.stTextInput input {
-    background: white;
-    border: 1px solid #ded8ee;
-    border-radius: 10px;
-    color: #302750;
-}
-
-[data-testid="stDataFrame"] {
-    border: 1px solid var(--border);
-    border-radius: 12px;
-}
-
-.footer {
-    color: #89849e;
-    font-size: 12px;
-    text-align: center;
-    padding-top: 30px;
-}
-
-#MainMenu, footer {
-    visibility: hidden;
-}
-
-
-/* ===== GLOBAL READABILITY FIX ===== */
-
-/* Main page text */
-.stApp,
-.stApp p,
-.stApp label,
-.stApp li {
-    color: #302750;
-}
-
-/* Input labels and entered text */
-.stTextInput label,
-.stTextInput label p,
-.stTextArea label,
-.stTextArea label p {
-    color: #302750 !important;
-    font-weight: 700 !important;
-}
-
-.stTextInput input,
-.stTextArea textarea {
+[data-testid="stTextInput"] input {
     background: #ffffff !important;
     color: #302750 !important;
-    border: 1px solid #d8d0ed !important;
-    caret-color: #7964dc !important;
+    border: 1px solid #d9d2ed !important;
+    border-radius: 10px !important;
+    min-height: 44px;
 }
 
-.stTextInput input::placeholder,
-.stTextArea textarea::placeholder {
-    color: #827a9b !important;
+[data-testid="stTextInput"] input::placeholder {
+    color: #817796 !important;
     opacity: 1 !important;
 }
 
-/* All buttons: search, audit, recommendations */
-.stApp button,
-.stApp button p {
-    color: #ffffff !important;
-}
-
-.stApp button[kind="primary"],
-.stApp button[kind="secondary"],
-.stFormSubmitButton button,
-.stButton button {
-    background: #7964dc !important;
-    color: #ffffff !important;
-    border-color: #7964dc !important;
-    border-radius: 11px !important;
-    font-weight: 700 !important;
-}
-
-.stApp button:hover {
-    background: #5f49bd !important;
-    color: #ffffff !important;
-}
-
-/* Warning, info, error and success messages */
+/* ALERTS */
 [data-testid="stAlert"] {
     border-radius: 12px !important;
     border: 1px solid #e0d8f4 !important;
@@ -377,71 +246,80 @@ header[data-testid="stHeader"] {
 
 [data-testid="stAlert"] p,
 [data-testid="stAlert"] span,
-[data-testid="stAlert"] div {
+[data-testid="stAlert"] [data-testid="stMarkdownContainer"] {
     color: #302750 !important;
 }
 
-/* Info messages */
 [data-testid="stAlert"][kind="info"] {
     background: #eeeaff !important;
 }
 
-/* Warning messages */
 [data-testid="stAlert"][kind="warning"] {
     background: #fff5d9 !important;
 }
 
-/* Error messages */
 [data-testid="stAlert"][kind="error"] {
     background: #fff0f0 !important;
 }
 
-/* Success messages */
 [data-testid="stAlert"][kind="success"] {
     background: #e7f7ed !important;
 }
 
-/* Data tables */
+/* TABLES */
 [data-testid="stDataFrame"] {
     background: #ffffff !important;
-    border: 1px solid #e8e3f4 !important;
-    border-radius: 12px !important;
+    border: 1px solid #e7e1f4 !important;
+    border-radius: 12px;
 }
 
-/* Keep the top header light */
-header[data-testid="stHeader"] {
-    background: #f8f7fc !important;
-}
-
-/* Footer should use full available width */
-.custom-footer,
-.footer {
-    display: block;
+/* FOOTER */
+.footer-panel {
+    background: #f0ecfc;
+    border: 1px solid #e2daf7;
+    border-radius: 18px;
+    padding: 25px 16px;
+    margin-top: 45px;
+    text-align: center;
     width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
-    margin: 40px auto 0;
-    text-align: center !important;
-    overflow-wrap: anywhere;
 }
 
+.footer-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #33275e !important;
+}
+
+.footer-title span {
+    color: #7964dc !important;
+}
+
+.footer-copy {
+    font-size: 13px;
+    color: #655a85 !important;
+    line-height: 1.9;
+    margin-top: 8px;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---------------- SIDEBAR ----------------
+# ==================== SIDEBAR ====================
 with st.sidebar:
     st.markdown(
         '<div class="brand">Knowledge<span>IQ.</span></div>'
-        '<div class="brand-caption">AI Knowledge Intelligence</div>',
+        '<div class="brand-sub">AI Knowledge Intelligence</div>',
         unsafe_allow_html=True,
     )
 
-    st.divider()
-    st.markdown("##### WORKSPACE")
+    st.markdown(
+        '<div class="side-heading">WORKSPACE</div>',
+        unsafe_allow_html=True,
+    )
 
     page = st.radio(
-        "Navigation",
+        "Navigate",
         [
             "Overview",
             "Article Search",
@@ -454,67 +332,65 @@ with st.sidebar:
     )
 
     st.divider()
-    st.markdown("##### SYSTEM STATUS")
 
-    if st.button("↻  Check backend connection",
+    st.markdown(
+        '<div class="side-heading">SYSTEM STATUS</div>',
+        unsafe_allow_html=True,
+    )
+
+    if st.button("↻ Check backend connection",
                  use_container_width=True):
         try:
             st.session_state["health"] = health_check()
-            st.session_state["backend_error"] = None
-        except RuntimeError as exc:
+            st.session_state["health_error"] = None
+        except Exception as exc:
             st.session_state["health"] = None
-            st.session_state["backend_error"] = str(exc)
+            st.session_state["health_error"] = str(exc)
 
     if st.session_state.get("health") is not None:
         st.success("Backend connected")
-    elif st.session_state.get("backend_error"):
+    elif st.session_state.get("health_error"):
         st.error("Backend unavailable")
-        st.caption(st.session_state["backend_error"])
+        st.caption(st.session_state["health_error"])
     else:
         st.info("Connection not checked")
 
-    st.divider()
     st.caption("Search · Audit · Insights · Recommendations")
 
 
-# ---------------- HELPERS ----------------
-def show_error(error):
-    st.error(str(error))
+# ==================== HELPER FUNCTIONS ====================
+def safe(value):
+    return html.escape(str(value))
 
 
-def show_table(results):
-    if results:
+def show_error(exc):
+    st.error(f"Backend request failed: {exc}")
+
+
+def show_rows(rows):
+    if isinstance(rows, list) and rows:
         st.dataframe(
-            pd.DataFrame(results),
+            pd.DataFrame(rows),
             use_container_width=True,
             hide_index=True,
         )
     else:
-        st.info("No results returned. Try again after checking the data.")
+        st.info("No records returned.")
 
 
-def metric_card(icon, label, value, description):
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-icon">{icon}</div>
-        <div class="metric-label">{label}</div>
-        <div class="metric-value">{value}</div>
-        <div class="metric-label">{description}</div>
-    </div>
-    """, unsafe_allow_html=True)
+def show_card(icon, label, value, description):
+    st.markdown(
+        f'<div class="card">'
+        f'<div class="card-icon">{safe(icon)}</div>'
+        f'<div class="card-label">{safe(label)}</div>'
+        f'<div class="card-value">{safe(value)}</div>'
+        f'<div class="card-desc">{safe(description)}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
 
-def feature_card(icon, title, description):
-    st.markdown(f"""
-    <div class="feature-card">
-        <div class="feature-icon">{icon}</div>
-        <div class="feature-title">{title}</div>
-        <div class="feature-desc">{description}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ---------------- OVERVIEW ----------------
+# ==================== OVERVIEW ====================
 if page == "Overview":
     st.markdown(
         '<div class="eyebrow">YOUR KNOWLEDGE WORKSPACE</div>',
@@ -525,9 +401,9 @@ if page == "Overview":
     <div class="hero">
         <div class="hero-tag">✦ AI-POWERED KNOWLEDGE INTELLIGENCE</div>
         <h1>Turn customer questions<br>into better answers.</h1>
-        <p>Discover relevant help articles, uncover repeated customer
-        questions, audit outdated content and identify knowledge gaps
-        — all in one workspace.</p>
+        <p>Discover relevant help articles, identify repeated customer
+        questions, audit outdated content and uncover knowledge gaps —
+        all in one workspace.</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -536,68 +412,56 @@ if page == "Overview":
         unsafe_allow_html=True,
     )
 
-    c1, c2, c3, c4 = st.columns(4)
+    cols = st.columns(4)
+    cards = [
+        ("📚", "Article Search", "Ready", "Find relevant articles"),
+        ("💬", "Query Insights", "Ready", "Similar questions"),
+        ("🔎", "Content Audit", "Ready", "Outdated and duplicate articles"),
+        ("✨", "Recommendations", "Ready", "Knowledge gaps"),
+    ]
 
-    with c1:
-        metric_card("📚", "Article Search", "Ready", "Semantic matching")
-    with c2:
-        metric_card("💬", "Query Insights", "Ready", "Similar questions")
-    with c3:
-        metric_card("🔎", "Content Audit", "Ready", "Duplicate & outdated")
-    with c4:
-        metric_card("✦", "Recommendations", "Ready", "Knowledge gaps")
+    for col, item in zip(cols, cards):
+        with col:
+            show_card(*item)
 
     st.markdown(
         '<div class="section-title">Explore your workspace</div>',
         unsafe_allow_html=True,
     )
 
-    a, b, c = st.columns(3)
+    cols = st.columns(3)
+    features = [
+        ("🔍", "Article Search",
+         "Find matching knowledge base content.", "Article Search"),
+        ("💬", "Similar Queries",
+         "Discover recurring customer questions.", "Similar Queries"),
+        ("🛠️", "Article Audit",
+         "Review outdated or duplicate content.", "Article Audit"),
+    ]
 
-    with a:
-        feature_card(
-            "⌕", "Find the right article",
-            "Search customer questions and discover relevant knowledge."
-        )
-        if st.button("Open article search →", key="open_search",
-                     use_container_width=True):
-            st.session_state["page"] = "Article Search"
-            st.rerun()
+    for col, item in zip(cols, features):
+        with col:
+            show_card(item[0], item[1], "Explore", item[2])
+            if st.button(
+                "Open " + item[1] + " →",
+                key="go_" + item[3],
+                use_container_width=True,
+            ):
+                st.session_state["page"] = item[3]
+                st.rerun()
 
-    with b:
-        feature_card(
-            "◈", "Understand query patterns",
-            "Explore similar questions and common support needs."
-        )
-        if st.button("Explore similar queries →", key="open_queries",
-                     use_container_width=True):
-            st.session_state["page"] = "Similar Queries"
-            st.rerun()
-
-    with c:
-        feature_card(
-            "✧", "Improve your knowledge base",
-            "Review content issues and discover missing topics."
-        )
-        if st.button("View article audit →", key="open_audit",
-                     use_container_width=True):
-            st.session_state["page"] = "Article Audit"
-            st.rerun()
-
-    st.markdown("""
-    <div class="info-panel">
-        <strong>✦ Intelligence behind the scenes</strong><br>
-        TF-IDF and cosine similarity compare text. Article freshness rules
-        and recurring query patterns support content audits and
-        knowledge-gap recommendations.
-    </div>
-    """, unsafe_allow_html=True)
+    st.info(
+        "Cards show feature availability, not live statistics. "
+        "Check the backend connection to verify the API."
+    )
 
 
-# ---------------- ARTICLE SEARCH ----------------
+# ==================== ARTICLE SEARCH ====================
 elif page == "Article Search":
-    st.markdown('<div class="eyebrow">DISCOVER CONTENT</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<div class="eyebrow">DISCOVER CONTENT</div>',
+        unsafe_allow_html=True,
+    )
     st.title("Article Search")
     st.write("Ask a question to find matching knowledge base articles.")
 
@@ -606,129 +470,117 @@ elif page == "Article Search":
             "Your question",
             placeholder="Where is my order?",
         )
-        submitted = st.form_submit_button("⌕  Search articles")
+        submitted = st.form_submit_button("🔍 Search articles")
 
     if submitted:
         if not question.strip():
             st.warning("Please enter a question.")
         else:
             try:
-                with st.spinner("Finding relevant articles..."):
-                    data = search_articles(question.strip())
+                with st.spinner("Searching articles..."):
+                    response = search_articles(question.strip())
 
-                results = data.get("results", [])
-                st.markdown("### Search results")
-                st.caption(f"{len(results)} result(s) returned")
+                results = response.get("results", [])
+                st.subheader("Search results")
 
-                if results:
-                    for article in results:
-                        with st.container(border=True):
-                            st.markdown(
-                                f"#### {article.get('title', 'Untitled')}"
+                if not results:
+                    st.info("No matching articles found.")
+
+                for article in results:
+                    with st.container(border=True):
+                        st.subheader(str(article.get("title", "Untitled")))
+                        st.caption(
+                            "Article ID: "
+                            + str(article.get("article_id", "N/A"))
+                        )
+                        st.write(article.get("content", ""))
+
+                        score = article.get("similarity")
+                        if score is not None:
+                            score = max(0.0, min(1.0, float(score)))
+                            st.progress(
+                                score,
+                                text=f"Similarity: {score:.1%}",
                             )
-                            st.caption(
-                                f"Article ID: {article.get('article_id', 'N/A')}"
-                            )
-                            st.write(article.get("content", "No content available."))
-
-                            score = article.get("similarity")
-                            if score is not None:
-                                score = max(0.0, min(1.0, float(score)))
-                                st.progress(score, text=f"Similarity: {score:.0%}")
-                else:
-                    st.info("No relevant articles found.")
-
-            except (RuntimeError, ValueError, TypeError) as exc:
+            except Exception as exc:
                 show_error(exc)
 
 
-# ---------------- SIMILAR QUERIES ----------------
+# ==================== SIMILAR QUERIES ====================
 elif page == "Similar Queries":
-    st.markdown('<div class="eyebrow">CUSTOMER INSIGHTS</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<div class="eyebrow">CUSTOMER INSIGHTS</div>',
+        unsafe_allow_html=True,
+    )
     st.title("Similar Queries")
-    st.write("Explore customer questions with similar wording or meaning.")
+    st.write("Find customer questions that may be asking the same thing.")
 
-    if st.button("↻  Load similar queries"):
+    if st.button("Load similar queries"):
         try:
-            with st.spinner("Loading query insights..."):
-                data = get_similar_queries()
-            show_table(data.get("results", []))
-        except RuntimeError as exc:
+            response = get_similar_queries()
+            show_rows(response.get("results", []))
+        except Exception as exc:
             show_error(exc)
 
 
-# ---------------- ARTICLE AUDIT ----------------
+# ==================== ARTICLE AUDIT ====================
 elif page == "Article Audit":
-    st.markdown('<div class="eyebrow">CONTENT QUALITY</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<div class="eyebrow">CONTENT QUALITY</div>',
+        unsafe_allow_html=True,
+    )
     st.title("Article Audit")
-    st.write("Review potentially duplicate or outdated knowledge articles.")
+    st.write("Check for outdated and duplicate knowledge base articles.")
 
-    if st.button("⌕  Run article audit"):
+    if st.button("Run article audit"):
         try:
-            with st.spinner("Auditing articles..."):
-                data = get_article_audit()
-            show_table(data.get("results", []))
-        except RuntimeError as exc:
+            response = get_article_audit()
+            show_rows(response.get("results", []))
+        except Exception as exc:
             show_error(exc)
 
 
-# ---------------- RECOMMENDATIONS ----------------
+# ==================== RECOMMENDATIONS ====================
 elif page == "Recommendations":
-    st.markdown('<div class="eyebrow">CONTINUOUS IMPROVEMENT</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<div class="eyebrow">CONTINUOUS IMPROVEMENT</div>',
+        unsafe_allow_html=True,
+    )
     st.title("Knowledge Gap Recommendations")
-    st.write("Discover topics that may need clearer queries or new help articles.")
+    st.write("Find opportunities to improve the knowledge base.")
 
-    with st.form("recommendation_form"):
+    with st.form("recommend_form"):
         question = st.text_input(
             "Customer question",
             placeholder="How can I track my order?",
         )
-        submitted = st.form_submit_button("✦  Generate recommendations")
+        submitted = st.form_submit_button("✦ Generate recommendations")
 
     if submitted:
         if not question.strip():
             st.warning("Please enter a customer question.")
         else:
             try:
-                with st.spinner("Analysing knowledge gaps..."):
-                    data = get_recommendations(question.strip())
+                with st.spinner("Generating recommendations..."):
+                    response = get_recommendations(question.strip())
 
-                st.markdown("### Rewritten query")
-                st.markdown(
-                    f'<div class="info-panel"><strong>'
-                    f'{data.get("rewritten_query", "Not provided")}'
-                    f'</strong></div>',
-                    unsafe_allow_html=True,
-                )
+                st.subheader("Rewritten query")
+                st.info(str(response.get("rewritten_query", "Not provided")))
 
-                st.markdown("### Suggested improvements")
-                show_table(data.get("recommendations", []))
-
-            except RuntimeError as exc:
+                st.subheader("Suggested improvements")
+                show_rows(response.get("recommendations", []))
+            except Exception as exc:
                 show_error(exc)
 
 
-# ---------------- FOOTER ----------------
-
+# ==================== FOOTER ====================
 st.markdown("""
-<div class="custom-footer">
-    <div class="footer-brand">KnowledgeIQ<span>.</span></div>
-    <div class="footer-description">
-        Smarter knowledge. Better customer experiences.
-    </div>
-    <div class="footer-divider"></div>
-    <div class="footer-bottom">
+<div class="footer-panel">
+    <div class="footer-title">Knowledge<span>IQ.</span></div>
+    <div class="footer-copy">
+        Smarter knowledge. Better customer experiences.<br>
         Knowledge Base Improvement Advisory Agent<br>
-        Powered by Streamlit &amp; FastAPI
+        Built with Streamlit · Connected through FastAPI REST APIs
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
-
-
-
-
